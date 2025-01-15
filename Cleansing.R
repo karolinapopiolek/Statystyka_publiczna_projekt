@@ -35,7 +35,6 @@ chronicDisease2019 <- chronicDisease2019 %>% na.omit() %>%
   filter(!grepl("^Euro|Serbia|United Kingdom", `GEO`))
 
 
-
 # Create the mapping of countries and their two-letter codes
 country_codes <- data.frame(
   Country = c(
