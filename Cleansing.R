@@ -158,3 +158,12 @@ Gini$Category2019 <- cut(Gini$`2019`,
                          breaks = c(0, 28, 32, 100),
                          labels = c("Low", "Medium", "High"))
 
+
+# Gini Coefficient Distribution
+par(mfrow = c(1, 2))
+
+hist(Gini$`2014`, main = "Rozkład Giniego (2014)", xlab = "Rozkład współczynnika Giniego (2014)", col = "lightblue") 
+
+hist(Gini$`2019`, main = "Rozkład Giniego (2019)", xlab = "Rozkład współczynnika Giniego (2019)", col = "lightgreen") 
+
+
