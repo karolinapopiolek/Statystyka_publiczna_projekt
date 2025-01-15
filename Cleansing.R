@@ -116,6 +116,10 @@ country_groups <- list(
   "Eastern Europe" = c("BG", "CZ", "HU", "PL", "RO", "SK", "TR")
 )
 
+
+# Rename the column "YEAR" to "GEO"
+colnames(Gini)[1] <- "GEO"
+
 Gini$Region <- NA
 for(region in names(country_groups)) {
   Gini$Region[Gini$GEO %in% country_groups[[region]]] <- region
