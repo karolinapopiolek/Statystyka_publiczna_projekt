@@ -2,6 +2,8 @@ library(readxl)
 library(dplyr)
 library(ggplot2)
 library(patchwork)
+library(ggcorrplot)
+
 
 # Importing the data
 Gini <- read_excel("Gini.xlsx", sheet = "Czyste dane", 
@@ -167,3 +169,32 @@ hist(Gini$`2014`, main = "Rozkład Giniego (2014)", xlab = "Rozkład współczyn
 hist(Gini$`2019`, main = "Rozkład Giniego (2019)", xlab = "Rozkład współczynnika Giniego (2019)", col = "lightgreen") 
 
 
+# Correlation matrix for 2014
+chronicDisease2014$`2014` <- Gini$`2014` # adding a supportive column
+
+korelacja2014 <- cor(chronicDisease2014[, c("backPain", "Asthma", "Respiratory", "Hypertension", "Diabetes", "Depression", "2014")], 
+                     use = "complete.obs") 
+print(korelacja2014)
+
+# Corrplot for 2014
+ggcorrplot(korelacja2014, method = "circle", 
+           type = "lower", lab = TRUE,
+           lab_size = 3,
+           colors = c("red", "white", "green"),
+           title = "Macierz korelacji (2014)",
+           ggtheme = theme_minimal())
+
+# Correlation matrix for 2019
+chronicDisease2019$`2019` <- Gini$`2019` # adding a supportive column
+
+korelacja2019 <- cor(chronicDisease2019[, c("backPain", "Asthma", "Respiratory", "Hypertension", "Diabetes", "Depression", "2019")], 
+                     use = "complete.obs") 
+print(korelacja2019)
+
+# Corrplot for 2019
+ggcorrplot(korelacja2019, method = "circle", 
+           type = "lower", lab = TRUE,
+           lab_size = 3,
+           colors = c("red", "white", "green"),
+           title = "Macierz korelacji (2019)",
+           ggtheme = theme_minimal())
