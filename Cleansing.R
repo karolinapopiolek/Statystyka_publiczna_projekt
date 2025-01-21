@@ -103,13 +103,6 @@ chronicDisease2019Avg <- chronicDisease2019 %>%
 
 print(chronicDisease2019Avg)
 
-# Convert to a data frame for plotting
-chronicDiseaseAvg <- data.frame(
-  Year = c(rep("2014", 6), rep("2019", 6)),
-  Variable = names(chronicDisease2014Avg),
-  Value = c(chronicDisease2014Avg, chronicDisease2019Avg)
-)
-
 # Create a GEO column
 GEO <- paste0(country_codes$Code)
 
@@ -121,37 +114,23 @@ countryDiseaseAvg <- data.frame(
 
 countryDiseaseAvg$Change <- countryDiseaseAvg$`Y2019` - countryDiseaseAvg$`Y2014`
  
-
-# Plot for the Change in countryDiseaseAvg between by Region
-ggplot(countryDiseaseAvg, aes(x = GEO, y = Change)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~Region, scales = "free_x") +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "Change in Chronic Disease Values (2014-2019) by Region",
-       x = "Country",
-       y = "Change in Value")
-
-
 # Adding a Region column to countryDiseaseAvg dataset
 countryDiseaseAvg$Region <- NA
 for(region in names(country_groups)) {
   countryDiseaseAvg$Region[countryDiseaseAvg$GEO %in% country_groups[[region]]] <- region
 }
 
-
-
-
-# Plot for avg chronic disease change ## ale to jest bez sensu, bo skupiamy się na typie choroby zamiast kraju
-ggplot(chronicDiseaseAvg, aes(x = Variable, y = Value, fill = Year)) +
-  geom_bar(stat = "identity", position = "dodge") +
+# Plot for the Change in countryDiseaseAvg between by Region
+ggplot(countryDiseaseAvg, aes(x = reorder(GEO, Change), y = Change, fill = Change < 0)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("darkred", "darkgreen")) +
+  facet_wrap(~Region, scales = "free_x") +
   theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "Average Chronic Disease Values Comparison",
-       x = "Variables", 
-       y = "Average Value")
-
-
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") +
+  labs(title = "Change in Chronic Disease Values (2014-2019) by Region",
+       x = "Country",
+       y = "Change in Value")
 
 # Adding a region column to the datasets
 Gini$Region <- NA
@@ -174,11 +153,13 @@ Gini$change <- Gini$`2019` - Gini$`2014`
 
 
 # Plot for Gini change by region
-ggplot(Gini, aes(x = GEO, y = change)) +
+ggplot(Gini, aes(reorder(x = GEO, change), y = change, fill = change < 0)) +
   geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("darkred", "darkgreen")) +
   facet_wrap(~Region, scales = "free_x") +
   theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") +
   labs(title = "Gini Coefficient Change (2014-2019) by Region",
        x = "Country",
        y = "Change in Gini Coefficient")
@@ -221,10 +202,6 @@ ggplot(Gini, aes(x = Region, fill = Transition)) +
        y = "Count of Countries") +
   theme(legend.position = "bottom",
         plot.title = element_text(hjust = 0.5))
-
-
-print(chronicDisease2014[16,])
-print(chronicDisease2019[16,])
 
 # Gini Coefficient Distribution
 par(mfrow = c(1, 2))
@@ -274,19 +251,24 @@ Gini$changePP <- Gini$change / Gini$`2014` * 100
 countryDiseaseAvg$changePP <- countryDiseaseAvg$Change / countryDiseaseAvg$`Y2014` * 100
 
 # Plot for the change of Gini coefficient by country in 2014-2019
-ggplot(Gini, aes(x = reorder(GEO, changePP),  y = changePP)) +
+ggplot(Gini, aes(x = reorder(GEO, changePP), y = changePP, 
+                 fill = changePP < 0)) +  # Condition for coloring
   geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("darkred", "darkgreen")) +  # Red for FALSE (>0), green for TRUE (<0)
   theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") +  # Remove the legend
   labs(title = "Change in Gini Coefficient (2014-2019) by Country",
        x = "Country",
        y = "Change in Gini Coefficient, p.p.")
 
 # Plot for the change of chronicDiseaseAvg by country in 2014-2019
-ggplot(countryDiseaseAvg, aes(x = reorder(GEO, changePP), y = changePP)) +
+ggplot(countryDiseaseAvg, aes(x = reorder(GEO, changePP), y = changePP,
+                              fill = changePP < 0)) +  # Condition for coloring
   geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("darkred", "darkgreen")) +  # Red for FALSE (>0), green for TRUE (<0)
   theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   labs(title = "Change in Chronic Disease Values (2014-2019) by Country",
        x = "Country",
        y = "Change in average percentage of people suffering chronic disease, p.p.")
@@ -295,19 +277,29 @@ ggplot(countryDiseaseAvg, aes(x = reorder(GEO, changePP), y = changePP)) +
 Ranking <- data.frame(
   GEO = country_codes$Code,
   Avg14 = (Gini$`2014` + countryDiseaseAvg$`Y2014`)/2, # the lower the better
-  Avg19 = (Gini$`2019` + countryDiseaseAvg$`Y2019`)/2, # the lower the better
-  Change = (Ranking$Avg19 - Ranking$Avg14) / Ranking$Avg14 * 100
+  Avg19 = (Gini$`2019` + countryDiseaseAvg$`Y2019`)/2 # the lower the better
 )
+
+# Add the change column to above data frame
+Ranking$Change <- (Ranking$Avg19 - Ranking$Avg14) / Ranking$Avg14 * 100
 
 # Combined plot for Avg14 and Avg19
 ggplot(Ranking, aes(x = GEO)) +
-  geom_point(aes(y = Avg14), color = "black", size = 4) +
-  geom_point(aes(y = Avg19), color = "red", size = 4) +
+  geom_point(aes(y = Avg14, color = "2014"), size = 4) +
+  geom_point(aes(y = Avg19, color = "2019"), size = 4) +
+  scale_color_manual(values = c("2014" = "#0072B2", "2019" = "#D55E00")) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "Ranking of countries according to Gini coefficient and chronic disease among population",
-       x = "Country",
-       y = "Rank (lower is better)")
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(
+    title = "Ranking of countries according to Gini coefficient and chronic disease among population",
+    x = "Country",
+    y = "Rank (lower is better)",
+    color = "Year"
+  )
 
 # Plot for the change in ranking
 ggplot(Ranking, aes(x = GEO, y = Change, fill = Change > 0)) +
@@ -319,3 +311,6 @@ ggplot(Ranking, aes(x = GEO, y = Change, fill = Change > 0)) +
   labs(title = "Change in ranking of countries according to Gini coefficient and chronic disease among population",
        x = "Country", 
        y = "Change in rank, p.p.")
+
+
+
